@@ -4,6 +4,7 @@ import { Product } from "../models/productModel.js";
 import multer from "multer";
     import path from 'path'
 import { deleteOne } from "./factory.js";
+
 // Multer configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -20,7 +21,7 @@ const storage = multer.diskStorage({
         return;
     }
     cb(null, true);}
-const upload = multer({ storage: storage,fileFilter});
+const upload = multer({ storage: storage,fileFilter, limits: { fileSize: 3000 },});
 
 /*const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -42,8 +43,9 @@ const createOneProduct = catchAsync(async (req, res, next) => {
     if (!productName || !price || !description) {
         return next(new AppError('Product name, price, and description are required', 400));
     }
-        let photo = req.file ? req.file.path : '';
+        let photo =req.file ? req.file.path : '';
         console.log(req.file)
+        console.log(photo)
     const newProduct = await Product.create({ productName, price, photo, description });
     res.status(200).json({
         msg: "Product created successfully",
@@ -61,8 +63,11 @@ const getAllProducts=catchAsync(async(req, res,next) => {
         return next(new AppError('Products not found', 404));
 
     }
-    res.status(200).json({msg:"success",products})
+       res.status(200).json([{msg:"success"},{products}])
+
+    
     })
+    //get product by id
 const getOneProduct=catchAsync(async(req,res,next)=>{
     const productId=req.params.id
     let product =await Product.findById(productId).populate('ratings')
@@ -95,16 +100,71 @@ const updateProduct=catchAsync(async(req,res,next)=>{
 
 })
 // const deleteProduct=deleteOne(Product)
+//  const addcat = async (req, res, next) => {
+//     // try {
+//       const products=  await Product.updateMany(
+//             { category: { $exists: false } },
+//             { $set: { category: "electronics" } }
+//         );
+//         return res.send("done");
+//     // }
+//     // catch (err) {
+//     //     next(err);
+//     // }
+// };
 export{
     getAllProducts,
     createOneProduct,
     getOneProduct,
     deleteProduct,
     updateProduct,
-    upload
+    upload,
+    
 }
 /**
+//JS file on node side
 
+var express = require('express');
+var fileUpload = require('express-fileupload');
+var fs = require("fs");
+var app = express();
+console.log('étape 0');
+app.use(express.static('mesStatic'));
+app.use(fileUpload());
+console.log('étape 1');
+app.get('/indexFileUpload.htm', function (req, res) {
+   res.sendFile( __dirname + "/" + "indexFileUpload.htm" );
+})
+console.log('étape 2');
+app.post('/file_upload', function (req, res) {
+
+   console.log('étape 3');
+   console.log('req.files:' , req.files);
+   if (!req.files) {
+       res.send('No files to upload.');
+       return;
+   }
+
+   console.log('req.files.file.data:' , req.files.file.data);
+   var bufDataFile = new Buffer(req.files.file.data, "utf-8");
+   console.log('étape 3.1');
+   console.log('__dirname : ' + __dirname);
+   fs.writeFile(__dirname + '/file_upload/output.txt', bufDataFile,  function(err) {
+      if (err) {
+         return console.error(err);
+      }
+      else {
+         console.log("Data written successfully !");
+      }      
+      console.log('étape 4');
+      res.end('Fin OK !!!');  
+   })
+})
+var server = app.listen(8081, function () {
+   var host = server.address().address
+   var port = server.address().port
+   console.log("Example app listening at http://%s:%s", host, port);
+})
   */
  /**
   * exports.getAllorders = catchAsync (async (req, res, next)=> {

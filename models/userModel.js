@@ -72,7 +72,11 @@ const userSchema=new Schema({
     //     type:Boolean,
     //     default:true,
     // },
-   
+   myCart:[{
+    type:mongoose.Schema.ObjectId,
+    ref:'Product',
+  
+   }],
     role:{
         type:String,
         enum:['admin','client'],

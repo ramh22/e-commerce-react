@@ -27,6 +27,10 @@ const productSchema=new Schema({
         default:"",
 
     },
+    category:{
+        type:String,
+        required:true
+    },
 cloudinary_id:{type:String,
 },
 status:{type :String,
