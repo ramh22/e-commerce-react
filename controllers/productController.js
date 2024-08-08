@@ -79,12 +79,28 @@ const deleteProduct=catchAsync(async(req,res,next)=>{
     const deletedProduct=await Product.findByIdAndDelete(product)
     res.status(204).json({status:"success",data:null})
 })
+
+const updateProduct=catchAsync(async(req,res,next)=>{
+    const productId=req.params.id
+    let product =await Product.findById(productId)
+    if(!product){
+        return next(new AppError("product not found",404))
+    }
+    const updatedOne= await Product.findByIdAndUpdate(
+        req.params.id, req.body,{
+            new: true,
+            runValidators: true
+          });
+    res.status(200).json({status:"success",data:{updatedOne}})
+
+})
 // const deleteProduct=deleteOne(Product)
 export{
     getAllProducts,
     createOneProduct,
     getOneProduct,
     deleteProduct,
+    updateProduct,
     upload
 }
 /**

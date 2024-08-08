@@ -11,18 +11,20 @@ import {
     createOneProduct,
     deleteProduct,
     getOneProduct,
+    updateProduct
   } from "../controllers/productController.js"
 import { createOneRate } from "../controllers/ratingController.js";
 const router=express.Router()
 router
     .route('/')
     .get(getAllProducts)
-    .post(verifyToken,upload.single('photo'), createOneProduct)
-    
+    .post(verifyToken,upload.single("photo"), createOneProduct)
+
     router
     .route('/:id')
     .delete( verifyToken, deleteProduct)
     .get(getOneProduct)
+    .patch(verifyToken,upload.single("photo"),updateProduct)
 
 // router.get('/verify/:token', verifyAccount)
 
