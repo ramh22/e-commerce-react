@@ -1,22 +1,24 @@
 
-import catchAsync from '../handleErrors/catchAsync.js';
-import AppError from '../handleErrors/appError.js';
-import jwt from 'jsonwebtoken'
-
-const verifyToken=(req,res,next)=>{
-    const {token}=req.headers
-    jwt.verify(token,"ThePassword",(err,decoded)=>{
-        if(err)return res.status(401).json({msg:"invalid token"})
-            req.user=decoded
-        next()
-    })
+ import catchAsync from '../handleErrors/catchAsync.js';
+import AppError from '../handleErrors/appError.js'
+ import jwt from 'jsonwebtoken'
+ import promisify from "express"
+ import util from "util"
+ import { User } from '../models/userModel.js';
+// const verifyToken=(req,res,next)=>{
+//     const {token}=req.headers
+//     jwt.verify(token,"ThePassword",(err,decoded)=>{
+//         if(err)return res.status(401).json({msg:"invalid token"})
+//             req.user=decoded
+//         next()
+//     })
    
-}
+// }
 
 
-export default verifyToken;
 
-/*const verifyToken= catchAsync(async (req, res, next) => {
+
+const verifyToken= catchAsync(async (req, res, next) => {
     // 1) Getting token and check of it's there
     //get token from header
     let token;
@@ -32,10 +34,15 @@ export default verifyToken;
       );
     }
     // 2) Verification token
+    
     //The payload is what was used to sign the token.
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_KEY);
+  const decoded = await util.promisify(jwt.verify)(token, "ThePassword");
     // 3) Check if user still exists
+     console.log(decoded);
+    
     const currentUser = await User.findById(decoded.id);
+    console.log("current",currentUser);
+
     if (!currentUser) {
       return next(
         new AppError(
@@ -52,9 +59,12 @@ export default verifyToken;
     }
     // GRANT ACCESS TO PROTECTED ROUTE       req.user.id
     req.user = currentUser;
+  
     next();
 
-});*/
+});
+
+export default verifyToken;
 /*import jwt from 'jsonwebtoken';
 
 const verifyToken = (req, res, next) => {

@@ -86,7 +86,7 @@ const userSchema=new Schema({
     //   type:Boolean,
     //   default:false
     // }
-
+   
 },{
   timestamps:true
 ,toJSON:{virtuals:true}
@@ -116,5 +116,16 @@ userSchema.pre('save', async function(next) {
   // userSchema.methods.genAuthToken=  function(){
   //   return  jwt.sign({ email: this.email},"ThePassword")//this.toJson()
   // }
+  userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+    if (this.passwordChangedAt) {
+      const changedTimestamp = parseInt(
+        this.passwordChangedAt.getTime() / 1000,
+        10
+      );
+      return JWTTimestamp < changedTimestamp;
+    }
+    // False means NOT changed
+    return false;
+  };
   
 export const User=model("User",userSchema)

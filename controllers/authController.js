@@ -3,20 +3,23 @@ import jwt, { decode } from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import catchAsync from "../handleErrors/catchAsync.js"
 import AppError from '../handleErrors/appError.js'
-const signToken = id => {
+const signToken = (id,role) => {
   return jwt
-      .sign({ id },
+      .sign({ id,role},
       "ThePassword" ,
-      {expiresIn:"100d"});
+      {expiresIn:"100d"},);
   };
   const createSendToken = (user, statusCode, res) => {
-      const token = signToken(user._id);
+    // console.log(user);
+    
+      const token = signToken(user._id,user.role);
       res.status(statusCode).json({
           status: 'success',
           token,
           data: {
             user
           }
+
       });
   }
 
@@ -65,7 +68,7 @@ const login=catchAsync(async(req,res,next)=>{
      // const addedUser= await User.save()
      user.password=undefined
      //sendEmail(req.body.email)
-     //let token =jwt.sign(req.body.email,"ThePassword")
+    //  let token =jwt.sign({user.email,useri._id,req.},"ThePassword")//
     //  let token=user.genAuthToken()
      //data of user in token
     //  res.status(201).json({

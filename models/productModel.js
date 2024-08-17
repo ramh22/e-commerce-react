@@ -63,6 +63,11 @@ favorite:{
     ref:'Favorite',
    
     },  
+ __v:{
+    type:Number,
+    select:false
+
+ }   
   
 },{
     timestamps:true,

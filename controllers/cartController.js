@@ -11,29 +11,37 @@ import { User } from "../models/userModel.js";
 //         data:{Ratings}})
 //     })
 // //create add to cart
- const AddProductToCart=catchAsync(async(res,req,next)=>{
-    //  if(!req.body.product)req.body.product=req.params.id
-    const {id}=req.body
+const AddProductToCart = catchAsync(async (req, res, next) => {
+    const { id } = req.body;
 
-    if(!id){
-       return next(new AppError("product is required",404)) 
+    if (!id) {
+        return next(new AppError("Product ID is required", 400));
     }
-    const product=await Product.findById(id)
-    if(!product){
-        return next(new AppError("product does not found",404)) 
-     }
-     if(req.user.myCart.includes(product))return next(new AppError("product added to cart ",404)) 
-    
-//     //from token  
-//     //protect middleware - verifyToken
-    if(!req.body.user)req.body.user=req.user.id
-    const productAddedToCart=await User.findByIdAndUpdate(req.user._id,
-        {myCart:[...req.user.cart,product._id]},
-        {new:true,useFindAndModify})
-     res.status(200).json({
-         msg:"success",
-         data:{productAddedToCart}})
-     })
+
+    const product = await Product.findById(id);
+    if (!product) {
+        return next(new AppError("Product not found", 404));
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+        return next(new AppError("User not found", 404));
+    }
+
+    if (user.myCart.includes(id)) {
+        return next(new AppError("Product already in cart", 400));
+    }
+
+    user.myCart.push(id);
+    await user.save();
+
+    res.status(200).json({
+        msg: "Product added to cart successfully",
+        data: { cart: user.myCart }
+    });
+});
+
+export { AddProductToCart };
     //  const getAllProductsOnCart=catchAsync(async(req, res) => {
     //     const productsOnMyCart=await Cart.find({addedToCart:true})
     //     res.status(200).json({
@@ -51,4 +59,4 @@ import { User } from "../models/userModel.js";
     //             msg:"success",
     //             data:null})
     //         })
-   export {AddProductToCart,}   
+//    export {addProductToCart,}   

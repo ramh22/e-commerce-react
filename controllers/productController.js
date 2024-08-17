@@ -5,24 +5,61 @@ import multer from "multer";
     import path from 'path'
 import { deleteOne } from "./factory.js";
 
+
 // Multer configuration
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, "uploads/")
-    },
-    filename: (req, file, cb) => {
-      cb(null, file.fieldname +Date.now() +"-"+ file.originalname)
-    },
-  })
-  function fileFilter(req, file, cb) {
+/*work with react file
+var storage = multer.diskStorage(
+    {
+        destination: './uploads',
+        // filename: function (req, file, cb ) {
+        //     cb( null, file.originalname);
+        // }
+        filename: (req, file, cb) => {
+            
+            cb(null, 'iti'+file.fieldname +Date.now() +"-"+ file.originalname)
+          },
+    }
+);
+function fileFilter(req, file, cb) {
     let ext = path.extname(file.originalname);
     if (![".jpg", ".jpeg", ".png", ".jfif", ".gif",".pjpeg",".svg",".webp",".pjp"].includes(ext)) {
         cb(new Error("File type is not supported"), false);
         return;
     }
     cb(null, true);}
-const upload = multer({ storage: storage,fileFilter, limits: { fileSize: 3000 },});
+const upload = multer({ storage: storage ,fileFilter} )*/
 
+ 
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, './uploads');
+    },
+    filename: (req, file, cb) => {
+        // Specify the filename for the uploaded file
+        //console.log(req.file?.path)
+        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+    }
+});
+
+// File filter to allow only specific file types
+const fileFilter = (req, file, cb) => {
+    const fileTypes = /jpeg|jpg|png|gif/;
+    const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = fileTypes.test(file.mimetype);
+
+    if (mimetype && extname) {
+        return cb(null, true);
+    } else {
+        cb('Error: Images Only!');
+    }
+};
+
+// Initialize `multer` with the storage options and file filter
+const upload =multer({
+    storage: storage,
+    fileFilter: fileFilter,
+    limits: { fileSize: 1024 * 1024 * 5 } // Limit file size to 5MB
+});
 /*const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/')
@@ -31,41 +68,50 @@ const upload = multer({ storage: storage,fileFilter, limits: { fileSize: 3000 },
         console.log(req.file)
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
         cb(null, 'iti-' + uniqueSuffix + '_' + file.originalname)
-    }
-});
+    }});
 
 */
+
+
 // create
 const createOneProduct = catchAsync(async (req, res, next) => {
-    const { productName, price,  description } = req.body;
-
+    const { productName, price,  description ,category} = req.body;
+    
+    console.log(req.file);
+    console.log(req)
     // Ensure required fields are present
-    if (!productName || !price || !description) {
+    if (!productName || !price || !description||!category) {
         return next(new AppError('Product name, price, and description are required', 400));
     }
-        let photo =req.file ? req.file.path : '';
-        console.log(req.file)
-        console.log(photo)
-    const newProduct = await Product.create({ productName, price, photo, description });
+    if(!req.file){
+        return next(new AppError('product Photo are required', 500));
+    }
+        //let photo =req.file ? req.file?.path : "";
+      //  console.log(req.file.originalname + " file successfully uploaded !!");
+    // console.log(photo)
+        const photo= `http://localhost:5000/uploads/${req.file?.filename}`;
+    const newProduct = await Product.create({ productName, price,category, description ,photo});
+    console.log(newProduct)
     res.status(200).json({
-        msg: "Product created successfully",
-        data: newProduct
+        msg: "success",
+        data: newProduct,
+        
     });
-});
 
-      //Upload image to cloudinary
-    //const result = await cloudinary.uploader.upload(req.file.path);
+});
 
     //get all products
 const getAllProducts=catchAsync(async(req, res,next) => {
-    const products=await Product.find()
+    let page= req.query.page * 1||1
+    if(req.query.page<=0){
+        page=1}
+    let skip=(page-1)*6
+    const products=await Product.find({}).sort({createdAt:-1}).skip(skip).limit(6)
     if(!products){
         return next(new AppError('Products not found', 404));
 
     }
        res.status(200).json([{msg:"success"},{products}])
-
-    
     })
     //get product by id
 const getOneProduct=catchAsync(async(req,res,next)=>{
@@ -166,26 +212,5 @@ var server = app.listen(8081, function () {
    console.log("Example app listening at http://%s:%s", host, port);
 })
   */
- /**
-  * exports.getAllorders = catchAsync (async (req, res, next)=> {
-const features = new APIFeatures(Order.find(), req.query)
-.filter()
-.limitFields()
-.sort()
-.paginate();
-const orders = await features.query;
-const populated = await Order.populate(orders,
-{path:"craft",
-select: "name"});
-const CraftOrders = populated.map((order)=>({
-...order.toObject(),
-craft: order.craft,
-}));
-const count = await Order.countDocuments();
-//console,log(count);
-res.status(200).json({
-count,
-results: CraftOrders
-});
-});
-  */
+
+  

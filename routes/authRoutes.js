@@ -1,5 +1,5 @@
 import express from "express";
-import emailCheck from "../middlewares/emailCheck.js"
+// import emailCheck from "../middlewares/emailCheck.js"
 import {
 
     signup,
@@ -9,7 +9,7 @@ import { validation } from "../validation/validation.js";
 import { userLogIn, userValidationSchema } from "../validation/userValidation.js";
 const router=express.Router()
 router.post('/login',login)
-router.post('/signup',emailCheck,signup);
+router.post('/signup',signup);
 // router.post('/signup',validation(userValidationSchema),signup);
 // router.post('/login',validation(userLogIn),login)
 
