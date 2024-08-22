@@ -14,11 +14,11 @@ import productRoutes from './routes/productRoutes.js'
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = dirname(__filename);
+
  import path from 'path';
 import catchAsync from './handleErrors/catchAsync.js';
 import { setTimeout } from 'timers/promises';
+import { getAllProducts } from './controllers/productController.js';
 const __dirname = path.resolve();
 // const uploadsFolder=path.join(__dirname,"uploads")
 const app = express();
@@ -51,7 +51,7 @@ app.use((req,res,next)=>{
  app.use('/api/v1/react/users',userRoutes);
  app.use('/api/v1/react/rates',ratingRoutes);
  app.use('/api/v1/react/products',productRoutes);
-
+//  app.use('/api/v1/react/products?page=:page&limit=:limit',getAllProducts);
 
  app.all('*', (req, res, next) => {
     return next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));//update here by return//class AppError extends Error

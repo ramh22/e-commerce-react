@@ -43,7 +43,7 @@ const storage = multer.diskStorage({
 
 // File filter to allow only specific file types
 const fileFilter = (req, file, cb) => {
-    const fileTypes = /jpeg|jpg|png|gif/;
+    const fileTypes = /jpeg|jpg|png|gif|pjpeg|svg|webp|pjp|jfif/;
     const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = fileTypes.test(file.mimetype);
 
@@ -77,8 +77,8 @@ const upload =multer({
 const createOneProduct = catchAsync(async (req, res, next) => {
     const { productName, price,  description ,category} = req.body;
     
-    console.log(req.file);
-    console.log(req)
+    
+    
     // Ensure required fields are present
     if (!productName || !price || !description||!category) {
         return next(new AppError('Product name, price, and description are required', 400));
@@ -86,9 +86,7 @@ const createOneProduct = catchAsync(async (req, res, next) => {
     if(!req.file){
         return next(new AppError('product Photo are required', 500));
     }
-        //let photo =req.file ? req.file?.path : "";
-      //  console.log(req.file.originalname + " file successfully uploaded !!");
-    // console.log(photo)
+      
         const photo= `http://localhost:5000/uploads/${req.file?.filename}`;
     const newProduct = await Product.create({ productName, price,category, description ,photo});
     console.log(newProduct)
@@ -102,15 +100,13 @@ const createOneProduct = catchAsync(async (req, res, next) => {
 
     //get all products
 const getAllProducts=catchAsync(async(req, res,next) => {
-    let page= req.query.page * 1||1
-    if(req.query.page<=0){
-        page=1}
-    let skip=(page-1)*6
-    const products=await Product.find({}).sort({createdAt:-1}).skip(skip).limit(6)
-    if(!products){
-        return next(new AppError('Products not found', 404));
 
-    }
+ 
+      
+        const products = await Product.find().sort({createdAt:-1})
+    
+  
+
        res.status(200).json([{msg:"success"},{products}])
     })
     //get product by id
@@ -136,6 +132,9 @@ const updateProduct=catchAsync(async(req,res,next)=>{
     let product =await Product.findById(productId)
     if(!product){
         return next(new AppError("product not found",404))
+    }
+    if (req.file) {
+        req.body.photo=`http://localhost:5000/uploads/${req.file?.filename}`;
     }
     const updatedOne= await Product.findByIdAndUpdate(
         req.params.id, req.body,{
@@ -167,50 +166,6 @@ export{
     upload,
     
 }
-/**
-//JS file on node side
 
-var express = require('express');
-var fileUpload = require('express-fileupload');
-var fs = require("fs");
-var app = express();
-console.log('étape 0');
-app.use(express.static('mesStatic'));
-app.use(fileUpload());
-console.log('étape 1');
-app.get('/indexFileUpload.htm', function (req, res) {
-   res.sendFile( __dirname + "/" + "indexFileUpload.htm" );
-})
-console.log('étape 2');
-app.post('/file_upload', function (req, res) {
-
-   console.log('étape 3');
-   console.log('req.files:' , req.files);
-   if (!req.files) {
-       res.send('No files to upload.');
-       return;
-   }
-
-   console.log('req.files.file.data:' , req.files.file.data);
-   var bufDataFile = new Buffer(req.files.file.data, "utf-8");
-   console.log('étape 3.1');
-   console.log('__dirname : ' + __dirname);
-   fs.writeFile(__dirname + '/file_upload/output.txt', bufDataFile,  function(err) {
-      if (err) {
-         return console.error(err);
-      }
-      else {
-         console.log("Data written successfully !");
-      }      
-      console.log('étape 4');
-      res.end('Fin OK !!!');  
-   })
-})
-var server = app.listen(8081, function () {
-   var host = server.address().address
-   var port = server.address().port
-   console.log("Example app listening at http://%s:%s", host, port);
-})
-  */
 
   
